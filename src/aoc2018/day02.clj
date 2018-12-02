@@ -43,18 +43,20 @@
        (apply str)))
 
 
-(defn find-pair [inputs]
-  (into #{}
-        (flatten
-         (for [input1 inputs
-               input2 inputs
-               :when (differ-by-only-one-char? input1 input2)]
-           [input1 input2]))))
+(defn find-pair [s xs]
+  (let [pair (filter (partial differ-by-only-one-char? s) xs)]
+    (when (seq pair)
+      #{s (first pair)})))
 
 
 (defn get-common-letters [inputs]
-  (apply strip-diffing-char (find-pair inputs)))
-
+  (loop [head (first inputs)
+         tail (rest inputs)]
+    (when (seq tail)
+      (let [pair (find-pair head tail)]
+        (if pair
+          (apply strip-diffing-char pair)
+          (recur (first tail) (rest tail)))))))
 
 
 
@@ -64,6 +66,6 @@
 
   ;; --- Part Two ---
   (get-common-letters (get-inputs-from-file "resources/input02.txt"))
-  
+
   )
 

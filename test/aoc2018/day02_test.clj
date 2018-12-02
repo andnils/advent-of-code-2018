@@ -47,9 +47,9 @@
 
     (is (true? (x/differ-by-only-one-char? "fghij" "fguij"))))
 
-  (testing "find-pairs"
-    (is (= (x/find-pair test-input)
-           #{"fghij" "fguij"})))
+  (testing "find-pair"
+    (is (= (x/find-pair "abcd" ["qqqq" "dcba" "abab" "abcP"])
+           #{"abcd" "abcP"})))
 
 
   (testing "strip diffing char"
