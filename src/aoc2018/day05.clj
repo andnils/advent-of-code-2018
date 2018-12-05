@@ -1,5 +1,6 @@
 (ns aoc2018.day05
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.core.async :as async :refer [<! <!! >! >!!]]))
 
 
 (defn same-type? [c1 c2]
@@ -12,51 +13,58 @@
        (same-type? c1 c2)))
 
 
-(defn single-pass [input-seq]
-  (loop [output (transient [])
-         input input-seq]
-    (let [[x y] (take 2 input)]
-      (if x
-        (if y
-          (if (react? x y)
-            (recur output (drop 2 input))
-            (recur (conj! output x) (rest input)))
-          (persistent! (conj! output x)))
-        (persistent! output)))))
+(defn start-channel [data]
+  (let [chan (async/chan 128)]
+    (async/go
+      (doseq [c (seq data)]
+        (>! chan c))
+      (async/close! chan))
+    chan))
 
 
-(defn full-pass [input-seq]
-  (loop [input input-seq]
-    (let [new-result (single-pass input)]
-      (if (= (count input) (count new-result))
-        (apply str new-result)
-        (recur new-result)))))
+(defn read-channel [chan]
+  (loop [acc (transient [])
+         x (<!! chan)
+         y (<!! chan)]
+    (if (and y (not= y \newline))
+      (if (react? x y)
+        (if-let [last-acc (get acc (dec (count acc)))]
+          (recur (pop! acc) last-acc (<!! chan))
+          (recur acc (<!! chan) (<!! chan)))
+        (recur (conj! acc x) y (<!! chan)))
+      (apply str (persistent! (conj! acc x))))))
 
 
-(defn count-units [data]
-  (-> (full-pass data)
-      (str/trim-newline)
-      (count)))
+(defn react! [data]
+  (-> (start-channel data)
+      (read-channel)))
 
 
-(defn solve-part-one []
-  (count-units (slurp "resources/input05.txt")))
+(defn solve-part-one [data]
+  (count (react! data)))
 
 
-(defn solve-part-two []
-  (apply min
-         (let [data (slurp "resources/input05.txt")]
-           (for [exclude "abcdefghijklmnopqrstuvwxyz"]
-             (count-units (str/replace data (re-pattern (str "(?i)" exclude)) ""))))))
+(defn solve-part-two [data]
+  (apply min (for [exclude "abcdefghijklmnopqrstuvwxyz"]
+               (let [regex (re-pattern (str "(?i)" exclude))]
+                 (-> (str/replace data regex "")
+                     react!
+                     count)))))
+
+
 
 
 (comment
   ;; --- Part One ---
-  ;; 5 secs!
-  (solve-part-one)
+  ;; 0.03 secs!
+  (time
+   (-> (slurp "resources/input05.txt")
+       (solve-part-one)))
 
   ;; --- Part Two ---
-  ;; 2 minutes!!!
-  (solve-part-two)
+  ;; 0.6 secs
+  (time
+   (-> (slurp "resources/input05.txt")
+       (solve-part-two)))
 
   )

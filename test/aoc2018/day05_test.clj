@@ -12,6 +12,6 @@
   (is (true? (x/react? \A \a))))
 
 
-(deftest reduce-data
-  (is (= (x/full-pass "dabAcCaCBAcCcaDA")
+(deftest react-data
+  (is (= (x/react! "dabAcCaCBAcCcaDA")
          "dabCBAcaDA")))
