@@ -38,17 +38,16 @@
       (apply str (persistent! (conj! acc x))))))
 
 
-(defn- is-not-char [c]
-   (fn [x] (or (not= (int x) (int c))
-               (not= (int x) (+ 32 (int c))))))
-
+(defn make-filter [exclude-char]
+  (let [excluded (into #{} (str exclude-char (str/upper-case exclude-char)))]
+    (fn [x] (not (contains? excluded x)))))
 
 (defn react!
   ([data]
    (-> (start-channel data)
        (read-channel)) )
   ([data exclude-char]
-   (-> (start-channel data (filter (is-not-char exclude-char)))
+   (-> (start-channel data (filter (make-filter exclude-char)))
        (read-channel))))
 
 
@@ -58,23 +57,17 @@
 
 (defn solve-part-two [data]
   (apply min (for [exclude-char "abcdefghijklmnopqrstuvwxyz"]
-               (-> (react! data exclude-char)
-                   count))))
+               (count (react! data exclude-char)))))
 
 
 
 
 (comment
   ;; --- Part One ---
-  ;; 0.03 secs!
-  (time
-   (-> (slurp "resources/input05.txt")
-       (solve-part-one)))
+  (-> (slurp "resources/input05.txt")
+      (solve-part-one))
 
   ;; --- Part Two ---
-  ;; 0.6 secs
-  (time
-   (-> (slurp "resources/input05.txt")
-       (solve-part-two)))
-
-  )
+  (-> (slurp "resources/input05.txt")
+      (solve-part-two))
+)

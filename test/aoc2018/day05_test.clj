@@ -12,6 +12,15 @@
   (is (true? (x/react? \A \a))))
 
 
+
 (deftest react-data
   (is (= (x/react! "dabAcCaCBAcCcaDA")
          "dabCBAcaDA")))
+
+(deftest part-one
+  (is (= (x/solve-part-one "dabAcCaCBAcCcaDA")
+         10)))
+
+(deftest part-two
+  (is (= (x/solve-part-two "dabAcCaCBAcCcaDA")
+         4)))
