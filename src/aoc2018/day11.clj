@@ -47,6 +47,10 @@
 
 (comment
 
+  ;; TODO: improve performance by memoizing square-sums
+  ;; The square sum of e.g. 5x5-grid with at [1,1] equals
+  ;; the sum of the 4x4-grid at [1,1] plus row 5 and col 5.
+  
   (time
    (let [[x y square-size max-total-power]
          (solve-part-one 9306)]
