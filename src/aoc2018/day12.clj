@@ -129,7 +129,9 @@
    (binding [*rules* real-rules]
      (solve-part-one real-state)))
 
+  
   ;; heapspace!!!
+  ;, TODO: find new solution, use less memory
   (time
    (binding [*rules* real-rules]
      (solve-part-two real-state)))
